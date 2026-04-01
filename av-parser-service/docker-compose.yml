@@ -1,0 +1,29 @@
+services:
+  av-parser-service:
+    build: .
+    image: jhawk7/av-parser-service:latest
+    container_name: av-parser-service
+    ports:
+      - "8888:8888"
+    depends_on:
+      - redis
+    env_file:
+      - .env
+    volumes:
+      - ./audio_archive:/app/audio_archive
+      - ./video_archive:/app/video_archive
+    restart: always
+  
+  redis:
+    image: "redis:alpine"
+    command:
+      - /bin/sh 
+      - -c
+      - redis-server --requirepass "$${REDIS_PASS:?REDIS_PASS not set}" --save 60 1 #save cmd for persistence
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis-data:/data
+    env_file:
+      - redis.env
+    restart: always

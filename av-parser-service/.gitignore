@@ -1,0 +1,10 @@
+bin/
+obj/
+.git/
+.env
+.env.sh
+yt-tmp/
+audio-tmp/
+audio_archive/
+video_archive/
+vendor/
