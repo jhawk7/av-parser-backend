@@ -32,7 +32,7 @@ WORKDIR /app
 COPY --from=builder /app/av-parser-service .
 
 # Create directories for processing and archiving
-RUN mkdir -p yt-tmp audio-tmp audio_archive video_archive
+RUN mkdir -p yt-tmp audio-tmp
 
 # Expose port 8888 to the outside world
 EXPOSE 8888
