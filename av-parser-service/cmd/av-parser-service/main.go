@@ -9,6 +9,7 @@ import (
 
 	"strings"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/jhawk7/av-parser-service/internal/common"
 	"github.com/jhawk7/av-parser-service/internal/mqttclient"
@@ -36,6 +37,11 @@ func main() {
 	avChan = make(chan mqttclient.AVMsg)
 
 	router := gin.Default()
+	router.Use(cors.New(cors.Config{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{"GET"},
+	}))
+
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"status": "ok",
