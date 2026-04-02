@@ -12,7 +12,7 @@ services:
     volumes:
       - ./audio_archive:/app/audio_archive
       - ./video_archive:/app/video_archive
-    restart: always
+    restart: unless-stopped
   
   redis:
     image: "redis:alpine"
@@ -26,4 +26,4 @@ services:
       - ./redis-data:/data
     env_file:
       - .redis.env
-    restart: always
+    restart: unless-stopped
