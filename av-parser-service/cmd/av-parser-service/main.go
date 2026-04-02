@@ -45,18 +45,9 @@ func main() {
 
 	router.GET("/jobs", func(c *gin.Context) {
 		jobs := storageClient.GetAllJobs(c)
-		jsonBytes, jsonErr := json.Marshal(jobs)
-		if jsonErr != nil {
-			err := fmt.Errorf("failed to marshal jobs to json; %v", jsonErr)
-			common.LogError(err, false)
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": "failed to retrieve jobs",
-			})
-			return
-		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"response": jsonBytes,
+			"response": jobs,
 		})
 	})
 
