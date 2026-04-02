@@ -25,5 +25,5 @@ services:
     volumes:
       - ./redis-data:/data
     env_file:
-      - redis.env
+      - .redis.env
     restart: always
