@@ -8,3 +8,4 @@ audio-tmp/
 audio_archive/
 video_archive/
 vendor/
+redis-data/

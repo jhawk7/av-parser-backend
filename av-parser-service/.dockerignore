@@ -3,6 +3,7 @@ obj/
 .git/
 .env
 .env.sh
+redis.env
 yt-tmp/
 audio-tmp/
 audio_archive/

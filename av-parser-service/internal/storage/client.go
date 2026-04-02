@@ -71,6 +71,7 @@ func (s *StorageClient) GetAllJobs(ctx context.Context) []mqttclient.AVMsg {
 func (s *StorageClient) StoreRequest(avMsg *mqttclient.AVMsg) {
 	guuid := s.generateUUID()
 	avMsg.Id = guuid
+	avMsg.Timestamp = time.Now().Local().Format(time.RFC3339)
 
 	jsonBytes, jsonErr := json.Marshal(avMsg)
 	if jsonErr != nil {

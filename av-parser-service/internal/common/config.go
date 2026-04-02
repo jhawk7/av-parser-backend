@@ -3,7 +3,6 @@ package common
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -11,7 +10,7 @@ import (
 
 type Config struct {
 	MQTTServer string
-	MQTTPort   int
+	MQTTPort   string
 	MQTTUser   string
 	MQTTPass   string
 	MQTTTopics []string
@@ -28,9 +27,7 @@ func LoadConfig() *Config {
 	}
 
 	if port, exists := os.LookupEnv("MQTT_PORT"); exists {
-		portVal, convErr := strconv.Atoi(port)
-		LogError(fmt.Errorf("failed to convert port to int; %v", convErr), true)
-		config.MQTTPort = portVal
+		config.MQTTPort = port
 	} else {
 		LogError(fmt.Errorf("MQTT_PORT environment variable not set"), true)
 	}
