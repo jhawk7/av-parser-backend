@@ -80,9 +80,9 @@ func AVParseHandler(avChan <-chan mqttclient.AVMsg) {
 		}
 
 		if videoFlag {
-			fmt.Println("saving video only..")
+			common.LogInfo("saving video only..")
 		} else {
-			fmt.Println("saving audio only..")
+			common.LogInfo("saving audio only..")
 		}
 
 		ctx := context.TODO()
@@ -101,7 +101,7 @@ func AVParseHandler(avChan <-chan mqttclient.AVMsg) {
 		transferFiles(audioFlag, videoFlag)
 		avmsg.Status = "completed"
 		storageClient.UpdateRequest(&avmsg)
-		fmt.Println("completed processing av request with id: ", avmsg.Id)
+		common.LogInfo(fmt.Sprintf("completed processing av request with id: ", avmsg.Id))
 	}
 }
 
@@ -136,17 +136,17 @@ func downloadContent(ytUrl string, videoFlag bool, ctx context.Context) error {
 		return dlErr
 	}
 
-	fmt.Println("vid download complete.")
+	common.LogInfo("vid download complete.")
 	return nil
 }
 
 func parseAudio(audioFlag bool) error {
 	if !audioFlag {
-		fmt.Println("audio parsing skipped.")
+		common.LogInfo("audio parsing skipped.")
 		return nil
 	}
 
-	fmt.Println("parsing audio from video..")
+	common.LogInfo("parsing audio from video..")
 
 	if osErr := os.MkdirAll(TMP_AUDIO_FOLDER, os.ModePerm); osErr != nil {
 		err := fmt.Errorf("failed to make tmp audio dir; [err: %v]", osErr)
@@ -177,7 +177,7 @@ func parseAudio(audioFlag bool) error {
 		return err
 	}
 
-	fmt.Println("av parsing complete.")
+	common.LogInfo("av parsing complete.")
 	return nil
 }
 
@@ -203,21 +203,21 @@ func transferFiles(audioFlag, videoFlag bool) {
 	}
 
 	if audioFlag {
-		fmt.Println("transferring audio files..")
+		common.LogInfo("transferring audio files..")
 		copyFiles(TMP_AUDIO_FOLDER, "audio_archive/")
 	}
 
 	if videoFlag {
-		fmt.Println("transferring video files..")
+		common.LogInfo("transferring video files..")
 		copyFiles(TMP_VID_FOLDER, "video_archive/")
 	}
 
-	fmt.Println("transfer complete")
+	common.LogInfo("transfer complete")
 	cleanup()
 }
 
 func cleanup() {
-	fmt.Println("cleaning up..")
+	common.LogInfo("cleaning up..")
 	os.RemoveAll(TMP_AUDIO_FOLDER)
 	os.RemoveAll(TMP_VID_FOLDER)
 }
