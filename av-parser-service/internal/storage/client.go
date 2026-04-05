@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"slices"
+	"sort"
 	"strings"
 	"time"
 
@@ -63,6 +65,13 @@ func (s *StorageClient) GetAllJobs(ctx context.Context) []mqttclient.AVMsg {
 		}
 
 		jobs = append(jobs, avMsg)
+
+		// sort jobs by timestamp in descending order
+		sort.Slice(jobs, func(i, j int) bool {
+			t1, _ := time.Parse(time.RFC3339, jobs[i].Timestamp)
+			t2, _ := time.Parse(time.RFC3339, jobs[j].Timestamp)
+			return t1.After(t2)
+		})
 	}
 
 	return jobs

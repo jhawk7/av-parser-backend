@@ -1,7 +1,8 @@
 services:
   av-parser-service:
     build: .
-    image: jhawk7/av-parser-service:latest
+    image: jhawk7/av-parser-service:arm64
+    #image: jhawk7/av-parser-service:amd64
     container_name: av-parser-service
     ports:
       - "8888:8888"
