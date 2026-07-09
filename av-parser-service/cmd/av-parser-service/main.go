@@ -69,20 +69,22 @@ func AVParseHandler(avChan <-chan mqttclient.AVMsg) {
 		ytUrl := avmsg.Url
 
 		audioFlag, videoFlag := false, false
-		if strings.ToLower(avmsg.Type) == "audio" {
+
+		switch avmsg.Type {
+		case "both":
 			audioFlag = true
-		} else if strings.ToLower(avmsg.Type) == "video" {
 			videoFlag = true
-		} else {
+			common.LogInfo("saving both audio and video..")
+		case "audio":
+			audioFlag = true
+			common.LogInfo("saving audio only")
+		case "video":
+			videoFlag = true
+			common.LogInfo("saving video only")
+		default:
 			err := fmt.Errorf("invalid av type flag: %v", avmsg.Type)
 			common.LogError(err, false)
 			continue
-		}
-
-		if videoFlag {
-			common.LogInfo("saving video only..")
-		} else {
-			common.LogInfo("saving audio only..")
 		}
 
 		ctx := context.TODO()
