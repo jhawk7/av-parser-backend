@@ -18,6 +18,11 @@ type Config struct {
 	RedisPass  string
 }
 
+func InitLogger() {
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+	logrus.SetOutput(os.Stdout)
+}
+
 func LoadConfig() *Config {
 	var config Config
 	if server, exists := os.LookupEnv("MQTT_SERVER"); exists {

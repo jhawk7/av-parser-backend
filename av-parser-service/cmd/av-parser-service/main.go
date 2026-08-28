@@ -31,6 +31,7 @@ var (
 )
 
 func main() {
+	common.InitLogger()
 	config = common.LoadConfig()
 	storageClient = storage.InitStorageClient(config)
 	mqttConsumer = mqttclient.InitClient(config)
