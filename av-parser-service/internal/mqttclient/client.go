@@ -24,11 +24,12 @@ type consumer struct {
 }
 
 type AVMsg struct {
-	Url       string `json:"url"`
-	Type      string `json:"type"`
-	Id        string `json:"id,omitempty"`
-	Status    string `json:"status,omitempty"`
-	Timestamp string `json:"timestamp,omitempty"`
+	Url           string `json:"url"`
+	Type          string `json:"type"`
+	Id            string `json:"id,omitempty"`
+	Status        string `json:"status,omitempty"`
+	FailureReason string `json:"failure_reason,omitempty"`
+	Timestamp     string `json:"timestamp,omitempty"`
 }
 
 var connHandler mqtt.OnConnectHandler = func(mclient mqtt.Client) {

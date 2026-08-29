@@ -94,12 +94,14 @@ func AVParseHandler(avChan <-chan mqttclient.AVMsg) {
 		ctx := context.TODO()
 		if err := downloadContent(ytUrl, videoFlag, ctx); err != nil {
 			avmsg.Status = "failed"
+			avmsg.FailureReason = fmt.Sprintf("failed to download content; [err: %v]", err)
 			storageClient.UpdateRequest(&avmsg)
 			continue
 		}
 
 		if err := parseAudio(audioFlag); err != nil {
 			avmsg.Status = "failed"
+			avmsg.FailureReason = fmt.Sprintf("failed to parse audio; [err: %v]", err)
 			storageClient.UpdateRequest(&avmsg)
 			continue
 		}
