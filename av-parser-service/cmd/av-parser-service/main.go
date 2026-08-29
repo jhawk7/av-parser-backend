@@ -38,7 +38,8 @@ func main() {
 	avChan = make(chan mqttclient.AVMsg)
 
 	// If yt-dlp isn't installed yet, download and cache it for further use.
-	ytdlp.MustInstall(context.TODO(), nil)
+	// MustInstallAll automatically downloads yt-dlp, FFmpeg, and Bun (the JS runtime) into a cached directory and maps them seamlessly.
+	ytdlp.MustInstallAll(context.TODO())
 
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
