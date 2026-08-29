@@ -125,12 +125,14 @@ func downloadContent(ytUrl string, videoFlag bool, ctx context.Context) error {
 
 	// yt-dlp will get best available format by default, but we want mp4 if we're saving it
 	var dl *ytdlp.Command
+	cacheDir, _ := ytdlp.GetCacheDir()
+	bunPath := fmt.Sprintf("%s/bun", cacheDir)
 	if videoFlag {
 		dl = ytdlp.New().
 			// CRITICAL STEP: You must call NoJsRuntimes() first to wipe out defaults
 			NoJsRuntimes().
 			// Tell it exactly what runtime it is cleared to use (e.g., bun or node)
-			JsRuntimes("bun").
+			JsRuntimes(bunPath).
 			FormatSort("vcodec:h264,res,ext:mp4:m4a").
 			RecodeVideo("mp4").
 			Output(TMP_VID_FOLDER + "%(extractor)s - %(title)s.%(ext)s")
