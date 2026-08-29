@@ -37,6 +37,9 @@ func main() {
 	mqttConsumer = mqttclient.InitClient(config)
 	avChan = make(chan mqttclient.AVMsg)
 
+	// If yt-dlp isn't installed yet, download and cache it for further use.
+	ytdlp.MustInstall(context.TODO(), nil)
+
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
 		AllowOrigins: []string{"*"},
@@ -110,9 +113,6 @@ func AVParseHandler(avChan <-chan mqttclient.AVMsg) {
 
 func downloadContent(ytUrl string, videoFlag bool, ctx context.Context) error {
 	fmt.Printf("retrieving video file from url %s\n", ytUrl)
-
-	// If yt-dlp isn't installed yet, download and cache it for further use.
-	ytdlp.MustInstall(ctx, nil)
 
 	if osErr := os.MkdirAll(TMP_VID_FOLDER, os.ModePerm); osErr != nil {
 		err := fmt.Errorf("failed to make tmp video dir; [err: %v]", osErr)
