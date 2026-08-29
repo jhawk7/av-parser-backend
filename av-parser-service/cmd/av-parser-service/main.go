@@ -130,7 +130,7 @@ func downloadContent(ytUrl string, videoFlag bool, ctx context.Context) error {
 			// CRITICAL STEP: You must call NoJsRuntimes() first to wipe out defaults
 			NoJsRuntimes().
 			// Tell it exactly what runtime it is cleared to use (e.g., bun or node)
-			JsRuntimes("node").
+			JsRuntimes("node:/usr/bin/node").
 			FormatSort("vcodec:h264,res,ext:mp4:m4a").
 			RecodeVideo("mp4").
 			Output(TMP_VID_FOLDER + "%(extractor)s - %(title)s.%(ext)s")
