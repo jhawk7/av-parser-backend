@@ -27,7 +27,8 @@ RUN apk add --no-cache \
     python3 \
     py3-pip \
     ca-certificates \
-    curl
+    curl \
+    nodejs
     #&& pip install --no-cache-dir --break-system-packages yt-dlp
 
 # install yt-dlp and copy to usr path (deprecated, go pkg automatically downloads yt-dlp)
