@@ -1,6 +1,8 @@
 services:
   av-parser-service:
     build: .
+    tty: true                              # prevents OS from aggressively buffering stdout
+    stdin_open: true                       # enables Docker log streaming to Portainer/Dozzle
     image: jhawk7/av-parser-service:arm64
     #image: jhawk7/av-parser-service:amd64
     container_name: av-parser-service

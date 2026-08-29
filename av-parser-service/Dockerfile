@@ -24,7 +24,13 @@ RUN apk add --no-cache \
     python3 \
     py3-pip \
     ca-certificates \
-    && pip install --no-cache-dir --break-system-packages yt-dlp
+    curl
+    #&& pip install --no-cache-dir --break-system-packages yt-dlp
+
+# install yt-dlp and copy to usr path
+RUN mkdir -p ~/.local/bin
+RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o ~/.local/bin/yt-dlp
+RUN chmod a+rx ~/.local/bin/yt-dlp && cp ~/.local/bin/yt-dlp /usr/local/bin/
 
 WORKDIR /app
 
