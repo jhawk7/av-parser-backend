@@ -10,7 +10,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 # update ytdlp go package
-RUN go install github.com/yt-dlp/yt-dlp@latest
+RUN go get -u github.com/lrstanley/go-ytdlp@latest
 
 # Copy the source from the current directory to the Working Directory inside the container
 COPY . .
