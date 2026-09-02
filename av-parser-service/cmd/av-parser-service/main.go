@@ -37,8 +37,6 @@ func main() {
 	mqttConsumer = mqttclient.InitClient(config)
 	avChan = make(chan mqttclient.AVMsg)
 
-	// If yt-dlp isn't installed yet, download and cache it for further use.
-	// MustInstallAll automatically downloads yt-dlp, FFmpeg, and Bun (the JS runtime) into a cached directory and maps them seamlessly.
 	ytdlp.MustInstallAll(context.TODO())
 
 	router := gin.Default()
@@ -61,7 +59,6 @@ func main() {
 		})
 	})
 
-	// kicks off mqtt consumer to read mqtt messages and add to channel for processing
 	go mqttConsumer.Listen(avChan)
 	go AVParseHandler(avChan)
 
@@ -123,19 +120,20 @@ func downloadContent(ytUrl string, videoFlag bool, ctx context.Context) error {
 		return err
 	}
 
-	// yt-dlp will get best available format by default, but we want mp4 if we're saving it
+	// Alpine Docker installs bun to /usr/local/bin/bun by default
 	var dl *ytdlp.Command
 	if videoFlag {
 		dl = ytdlp.New().
-			// CRITICAL STEP: You must call NoJsRuntimes() first to wipe out defaults
 			NoJsRuntimes().
-			// Tell it exactly what runtime it is cleared to use (e.g., bun or node)
-			JsRuntimes("node:/usr/bin/node").
+			JsRuntimes("/usr/local/bin/bun").
 			FormatSort("vcodec:h264,res,ext:mp4:m4a").
 			RecodeVideo("mp4").
 			Output(TMP_VID_FOLDER + "%(extractor)s - %(title)s.%(ext)s")
 	} else {
-		dl = ytdlp.New().Output(TMP_VID_FOLDER + "%(extractor)s - %(title)s.%(ext)s")
+		dl = ytdlp.New().
+			NoJsRuntimes().
+			JsRuntimes("/usr/local/bin/bun").
+			Output(TMP_VID_FOLDER + "%(extractor)s - %(title)s.%(ext)s")
 	}
 
 	args := []string{ytUrl, "--no-playlist", "--progress"}

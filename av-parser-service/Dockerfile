@@ -10,7 +10,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 # update ytdlp go package
-RUN go get -u github.com/lrstanley/go-ytdlp@latest
+#RUN go get -u github.com/lrstanley/go-ytdlp@latest
 
 # Copy the source from the current directory to the Working Directory inside the container
 COPY . .
@@ -18,25 +18,25 @@ COPY . .
 # Build the Go app
 RUN go build -o av-parser-service ./cmd/av-parser-service/main.go
 
+
 # Final stage
 FROM alpine:latest
 
-# Install dependencies: ffmpeg, python3, pip, and yt-dlp
+WORKDIR /app
+
+# Install dependencies: ffmpeg, python3, pip, bun (js runtime for yt-dlp)
 RUN apk add --no-cache \
     ffmpeg \
     python3 \
     py3-pip \
     ca-certificates \
     curl \
-    nodejs
-    #&& pip install --no-cache-dir --break-system-packages yt-dlp
+    bash \
+    unzip \
+    && curl -fsSL https://bun.sh/install | bash \
+    && pip install --no-cache-dir --break-system-packages yt-dlp
 
-# install yt-dlp and copy to usr path (deprecated, go pkg automatically downloads yt-dlp)
-#RUN mkdir -p ~/.local/bin
-#RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o ~/.local/bin/yt-dlp
-#RUN chmod a+rx ~/.local/bin/yt-dlp && cp ~/.local/bin/yt-dlp /usr/local/bin/
-
-WORKDIR /app
+RUN yt-dlp -U
 
 # Copy the Pre-built binary file from the previous stage
 COPY --from=builder /app/av-parser-service .

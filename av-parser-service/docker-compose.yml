@@ -13,8 +13,8 @@ services:
     env_file:
       - .env
     volumes:
-      - ./audio_archive:/app/audio_archive
-      - ./video_archive:/app/video_archive
+      - /mnt/media/media/Music:/app/audio_archive
+      - /mnt/media/media/Videos:/app/video_archive
     restart: unless-stopped
   
   redis:
