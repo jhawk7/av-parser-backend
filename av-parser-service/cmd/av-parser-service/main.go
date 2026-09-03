@@ -124,17 +124,17 @@ func downloadContent(ytUrl string, videoFlag bool, ctx context.Context) error {
 	var dl *ytdlp.Command
 	if videoFlag {
 		dl = ytdlp.New().
-			NoJsRuntimes().
+		        JsRuntimes("/usr/bin/deno").
 			FormatSort("vcodec:h264,res:1080,ext:mp4:m4a").
 			RecodeVideo("mp4").
 			Output(TMP_VID_FOLDER + "%(extractor)s - %(title)s.%(ext)s")
 	} else {
 		dl = ytdlp.New().
-			NoJsRuntimes().
+		        JsRuntimes("/usr/bin/deno").
 			Output(TMP_VID_FOLDER + "%(extractor)s - %(title)s.%(ext)s")
 	}
 
-	args := []string{ytUrl, "--no-playlist", "--progress", "--js-runtimes", "deno"}
+	args := []string{ytUrl, "--no-playlist", "--progress"}
 	_, dlErr := dl.Run(ctx, args...)
 	if dlErr != nil {
 		err := fmt.Errorf("failed to download content; [err: %v]", dlErr)
