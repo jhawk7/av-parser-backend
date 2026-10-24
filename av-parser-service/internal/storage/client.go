@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -17,6 +18,12 @@ import (
 type StorageClient struct {
 	redisClient *redis.Client
 }
+
+const (
+	JOB_PENDING   = "pending"
+	JOB_COMPLETED = "completed"
+	JOB_FAILED    = "failed"
+)
 
 func InitStorageClient(config *common.Config) *StorageClient {
 	redisCLient := redis.NewClient(&redis.Options{
@@ -36,6 +43,16 @@ func InitStorageClient(config *common.Config) *StorageClient {
 	return &StorageClient{
 		redisClient: redisCLient,
 	}
+}
+
+func (s *StorageClient) GetRecentJobs(ctx context.Context) []mqttclient.AVMsg {
+	jobs := s.GetAllJobs(ctx)
+	cutOff := time.Now().Add(-time.Minute * 5) // 5 minutes ago
+	recentJobs := slices.DeleteFunc(jobs, func(job mqttclient.AVMsg) bool {
+		t, _ := time.Parse(time.RFC3339, job.UpdatedAt)
+		return !t.After(cutOff)
+	})
+	return recentJobs
 }
 
 func (s *StorageClient) GetAllJobs(ctx context.Context) []mqttclient.AVMsg {
@@ -80,6 +97,7 @@ func (s *StorageClient) StoreRequest(avMsg *mqttclient.AVMsg) {
 	guuid := s.generateUUID()
 	avMsg.Id = guuid
 	avMsg.Timestamp = time.Now().Local().Format(time.RFC3339)
+	avMsg.UpdatedAt = avMsg.Timestamp
 
 	jsonBytes, jsonErr := json.Marshal(avMsg)
 	if jsonErr != nil {
@@ -93,11 +111,15 @@ func (s *StorageClient) StoreRequest(avMsg *mqttclient.AVMsg) {
 		return
 	}
 
-	avMsg.Status = "pending"
+	avMsg.Status = JOB_PENDING
 	common.LogInfo(fmt.Sprintf("successfully stored av request with id %v in redis", guuid))
 }
 
-func (s *StorageClient) UpdateRequest(avMsg *mqttclient.AVMsg) {
+func (s *StorageClient) UpdateRequest(avMsg *mqttclient.AVMsg, status string, failureReason string) {
+	avMsg.Status = status
+	avMsg.FailureReason = failureReason
+	avMsg.UpdatedAt = time.Now().Local().Format(time.RFC3339)
+
 	jsonBytes, jsonErr := json.Marshal(avMsg)
 	if jsonErr != nil {
 		err := fmt.Errorf("failed to marshal avMsg to json; %v", jsonErr)

@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"time"
 
 	"strings"
 
@@ -52,9 +53,20 @@ func main() {
 		})
 	})
 
+	streamer := router.Group("/stream")
+	{
+		streamer.Use(func(c *gin.Context) {
+			c.Writer.Header().Set("Content-Type", "text/event-stream")
+			c.Writer.Header().Set("Cache-Control", "no-cache")
+			c.Writer.Header().Set("Connection", "keep-alive")
+			c.Next()
+		})
+
+		streamer.GET("/jobs", StreamJobs)
+	}
+
 	router.GET("/jobs", func(c *gin.Context) {
 		jobs := storageClient.GetAllJobs(c)
-
 		c.JSON(http.StatusOK, gin.H{
 			"response": jobs,
 		})
@@ -64,6 +76,19 @@ func main() {
 	go AVParseHandler(avChan)
 
 	router.Run(":8888")
+}
+
+func StreamJobs(c *gin.Context) {
+	c.Stream(func(w io.Writer) bool {
+		time.Sleep(2 * time.Second)
+		recentJobs := storageClient.GetRecentJobs(c)
+		if len(recentJobs) == 0 {
+			return false // No recent jobs to send; close the stream
+		}
+
+		c.SSEvent("response", recentJobs)
+		return true
+	})
 }
 
 func AVParseHandler(avChan <-chan mqttclient.AVMsg) {
@@ -92,23 +117,20 @@ func AVParseHandler(avChan <-chan mqttclient.AVMsg) {
 
 		ctx := context.TODO()
 		if err := downloadContent(ytUrl, videoFlag, ctx); err != nil {
-			avmsg.Status = "failed"
-			avmsg.FailureReason = fmt.Sprintf("failed to download content; [err: %v]", err)
-			storageClient.UpdateRequest(&avmsg)
+			reason := fmt.Sprintf("failed to download content; [err: %v]", err)
+			storageClient.UpdateRequest(&avmsg, storage.JOB_FAILED, reason)
 			continue
 		}
 
 		if err := parseAudio(audioFlag); err != nil {
-			avmsg.Status = "failed"
-			avmsg.FailureReason = fmt.Sprintf("failed to parse audio; [err: %v]", err)
-			storageClient.UpdateRequest(&avmsg)
+			reason := fmt.Sprintf("failed to parse audio; [err: %v]", err)
+			storageClient.UpdateRequest(&avmsg, storage.JOB_FAILED, reason)
 			continue
 		}
 
 		transferFiles(audioFlag, videoFlag)
-		avmsg.Status = "completed"
-		storageClient.UpdateRequest(&avmsg)
-		common.LogInfo(fmt.Sprintf("completed processing av request with id: ", avmsg.Id))
+		storageClient.UpdateRequest(&avmsg, storage.JOB_COMPLETED, "")
+		common.LogInfo(fmt.Sprintf("completed processing av request with id: %v", avmsg.Id))
 	}
 }
 

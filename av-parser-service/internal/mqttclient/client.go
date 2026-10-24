@@ -30,6 +30,7 @@ type AVMsg struct {
 	Status        string `json:"status,omitempty"`
 	FailureReason string `json:"failure_reason,omitempty"`
 	Timestamp     string `json:"timestamp,omitempty"`
+	UpdatedAt     string `json:"updated_at,omitempty"`
 }
 
 var connHandler mqtt.OnConnectHandler = func(mclient mqtt.Client) {
