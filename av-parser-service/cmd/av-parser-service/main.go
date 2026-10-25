@@ -130,7 +130,12 @@ func AVParseHandler(avChan <-chan mqttclient.AVMsg) {
 			continue
 		}
 
-		transferFiles(audioFlag, videoFlag)
+		if err := transferFiles(audioFlag, videoFlag); err != nil {
+			reason := fmt.Sprintf("failed to transfer files; [err: %v]", err)
+			storageClient.UpdateRequest(&avmsg, storage.JOB_FAILED, reason)
+			continue
+		}
+
 		storageClient.UpdateRequest(&avmsg, storage.JOB_COMPLETED, "")
 		common.LogInfo(fmt.Sprintf("completed processing av request with id: %v", avmsg.Id))
 	}
@@ -212,14 +217,18 @@ func parseAudio(audioFlag bool) error {
 	return nil
 }
 
-func transferFiles(audioFlag, videoFlag bool) {
-	copyFiles := func(srcFile, dstDir string) {
+func transferFiles(audioFlag, videoFlag bool) (err error) {
+	copyFiles := func(srcFile, dstDir string) error {
 		entries, _ := os.ReadDir(srcFile)
 		for _, entry := range entries {
 			src, srcErr := os.Open(fmt.Sprintf("%s%s", srcFile, entry.Name()))
-			common.LogError(srcErr, true)
+			if srcErr != nil {
+				return srcErr
+			}
 			dst, dstErr := os.Create(dstDir + entry.Name())
-			common.LogError(dstErr, true)
+			if dstErr != nil {
+				return dstErr
+			}
 
 			defer func() {
 				src.Close()
@@ -231,20 +240,26 @@ func transferFiles(audioFlag, videoFlag bool) {
 				common.LogError(err, true)
 			}
 		}
+		return nil
 	}
 
 	if audioFlag {
 		common.LogInfo("transferring audio files..")
-		copyFiles(TMP_AUDIO_FOLDER, "audio_archive/")
+		if err := copyFiles(TMP_AUDIO_FOLDER, "audio_archive/"); err != nil {
+			return err
+		}
 	}
 
 	if videoFlag {
 		common.LogInfo("transferring video files..")
-		copyFiles(TMP_VID_FOLDER, "video_archive/")
+		if err := copyFiles(TMP_VID_FOLDER, "video_archive/"); err != nil {
+			return err
+		}
 	}
 
 	common.LogInfo("transfer complete")
 	cleanup()
+	return nil
 }
 
 func cleanup() {
