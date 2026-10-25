@@ -47,7 +47,7 @@ func InitStorageClient(config *common.Config) *StorageClient {
 
 func (s *StorageClient) GetRecentJobs(ctx context.Context) []mqttclient.AVMsg {
 	jobs := s.GetAllJobs(ctx)
-	cutOff := time.Now().Add(-time.Minute * 5) // 5 minutes ago
+	cutOff := time.Now().Add(-time.Minute * 10) // 10 minutes ago
 	recentJobs := slices.DeleteFunc(jobs, func(job mqttclient.AVMsg) bool {
 		t, _ := time.Parse(time.RFC3339, job.UpdatedAt)
 		return !t.After(cutOff)
@@ -96,6 +96,7 @@ func (s *StorageClient) GetAllJobs(ctx context.Context) []mqttclient.AVMsg {
 func (s *StorageClient) StoreRequest(avMsg *mqttclient.AVMsg) {
 	guuid := s.generateUUID()
 	avMsg.Id = guuid
+	avMsg.Status = JOB_PENDING
 	avMsg.Timestamp = time.Now().Local().Format(time.RFC3339)
 	avMsg.UpdatedAt = avMsg.Timestamp
 
@@ -111,7 +112,6 @@ func (s *StorageClient) StoreRequest(avMsg *mqttclient.AVMsg) {
 		return
 	}
 
-	avMsg.Status = JOB_PENDING
 	common.LogInfo(fmt.Sprintf("successfully stored av request with id %v in redis", guuid))
 }
 

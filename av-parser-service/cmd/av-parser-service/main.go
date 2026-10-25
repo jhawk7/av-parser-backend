@@ -87,7 +87,7 @@ func StreamJobs(c *gin.Context) {
 			return false // No recent jobs to send; close the stream
 		}
 
-		c.SSEvent("response", recentJobs)
+		c.SSEvent("message", gin.H{"response": recentJobs})
 		common.LogInfo(fmt.Sprintf("streamed %d recent jobs to client", len(recentJobs)))
 		return true
 	})
