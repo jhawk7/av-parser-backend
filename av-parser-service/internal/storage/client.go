@@ -47,7 +47,7 @@ func InitStorageClient(config *common.Config) *StorageClient {
 
 func (s *StorageClient) GetRecentJobs(ctx context.Context) []mqttclient.AVMsg {
 	jobs := s.GetAllJobs(ctx)
-	cutOff := time.Now().Add(-time.Minute * 2) // 2 minutes ago
+	cutOff := time.Now().Add(-time.Minute * 5) // 5 minutes ago
 	recentJobs := slices.DeleteFunc(jobs, func(job mqttclient.AVMsg) bool {
 		t, _ := time.Parse(time.RFC3339, job.UpdatedAt)
 		return !t.After(cutOff)
@@ -124,6 +124,7 @@ func (s *StorageClient) UpdateRequest(avMsg *mqttclient.AVMsg, status string, fa
 	if jsonErr != nil {
 		err := fmt.Errorf("failed to marshal avMsg to json; %v", jsonErr)
 		common.LogError(err, false)
+		return
 	}
 
 	if setErr := s.redisClient.Set(context.TODO(), avMsg.Id, jsonBytes, (time.Hour * 24 * 7)).Err(); setErr != nil {
@@ -132,7 +133,10 @@ func (s *StorageClient) UpdateRequest(avMsg *mqttclient.AVMsg, status string, fa
 		return
 	}
 
-	common.LogInfo(fmt.Sprintf("successfully updated av request with id %v in redis", avMsg.Id))
+	t1, _ := time.Parse(time.RFC3339, avMsg.Timestamp)
+	t2, _ := time.Parse(time.RFC3339, avMsg.UpdatedAt)
+	elapsed := t2.Sub(t1)
+	common.LogInfo(fmt.Sprintf("successfully updated av request with id %v in redis; time elapsed: %v", avMsg.Id, elapsed))
 }
 
 func (s *StorageClient) generateUUID() string {
