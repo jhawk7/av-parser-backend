@@ -47,7 +47,7 @@ func InitStorageClient(config *common.Config) *StorageClient {
 
 func (s *StorageClient) GetRecentJobs(ctx context.Context) []mqttclient.AVMsg {
 	jobs := s.GetAllJobs(ctx)
-	cutOff := time.Now().Add(-time.Minute * 10) // 10 minutes ago
+	cutOff := time.Now().Add(-time.Minute * 2) // 2 minutes ago
 	recentJobs := slices.DeleteFunc(jobs, func(job mqttclient.AVMsg) bool {
 		t, _ := time.Parse(time.RFC3339, job.UpdatedAt)
 		return !t.After(cutOff)
