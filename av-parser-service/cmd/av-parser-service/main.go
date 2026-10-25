@@ -81,7 +81,7 @@ func main() {
 func StreamJobs(c *gin.Context) {
 	common.LogInfo("client connected to stream jobs endpoint")
 	c.Stream(func(w io.Writer) bool {
-		time.Sleep(10 * time.Second)
+		time.Sleep(60 * time.Second)
 		recentJobs := storageClient.GetRecentJobs(c)
 		if len(recentJobs) == 0 {
 			return false // No recent jobs to send; close the stream
