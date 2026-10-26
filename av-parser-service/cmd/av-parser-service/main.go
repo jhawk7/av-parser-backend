@@ -83,12 +83,14 @@ func StreamJobs(c *gin.Context) {
 	c.Stream(func(w io.Writer) bool {
 		time.Sleep(60 * time.Second)
 		recentJobs := storageClient.GetRecentJobs(c)
-		if len(recentJobs) == 0 {
-			return false // No recent jobs to send; close the stream
-		}
 
 		c.SSEvent("message", gin.H{"response": recentJobs})
 		common.LogInfo(fmt.Sprintf("streamed %d recent jobs to client", len(recentJobs)))
+
+		if len(recentJobs) == 0 || storageClient.PendingCount == 0 {
+			return false // No recent jobs to send; close the stream
+		}
+
 		return true
 	})
 }

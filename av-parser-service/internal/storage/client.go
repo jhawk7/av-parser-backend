@@ -16,7 +16,8 @@ import (
 )
 
 type StorageClient struct {
-	redisClient *redis.Client
+	redisClient  *redis.Client
+	PendingCount int
 }
 
 const (
@@ -41,7 +42,8 @@ func InitStorageClient(config *common.Config) *StorageClient {
 	common.LogInfo(fmt.Sprintf("successfully connected to redis server; ping response: %v", res))
 
 	return &StorageClient{
-		redisClient: redisCLient,
+		redisClient:  redisCLient,
+		PendingCount: 0,
 	}
 }
 
@@ -111,8 +113,9 @@ func (s *StorageClient) StoreRequest(avMsg *mqttclient.AVMsg) {
 		common.LogError(err, false)
 		return
 	}
-
+	s.PendingCount++
 	common.LogInfo(fmt.Sprintf("successfully stored av request with id %v in redis", guuid))
+	common.LogInfo(fmt.Sprintf("current pending count: %v", s.PendingCount))
 }
 
 func (s *StorageClient) UpdateRequest(avMsg *mqttclient.AVMsg, status string, failureReason string) {
@@ -136,7 +139,9 @@ func (s *StorageClient) UpdateRequest(avMsg *mqttclient.AVMsg, status string, fa
 	t1, _ := time.Parse(time.RFC3339, avMsg.Timestamp)
 	t2, _ := time.Parse(time.RFC3339, avMsg.UpdatedAt)
 	elapsed := t2.Sub(t1)
+	s.PendingCount--
 	common.LogInfo(fmt.Sprintf("successfully updated av request with id %v in redis; time elapsed: %v", avMsg.Id, elapsed))
+	common.LogInfo(fmt.Sprintf("current pending count: %v", s.PendingCount))
 }
 
 func (s *StorageClient) generateUUID() string {
