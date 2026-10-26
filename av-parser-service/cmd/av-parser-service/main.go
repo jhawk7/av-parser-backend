@@ -81,7 +81,7 @@ func main() {
 func StreamJobs(c *gin.Context) {
 	common.LogInfo("client connected to stream jobs endpoint")
 	c.Stream(func(w io.Writer) bool {
-		time.Sleep(60 * time.Second)
+		time.Sleep(30 * time.Second)
 		recentJobs := storageClient.GetRecentJobs(c)
 
 		c.SSEvent("message", gin.H{"response": recentJobs})
